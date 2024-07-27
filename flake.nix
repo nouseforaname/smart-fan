@@ -16,7 +16,7 @@
   outputs = { self, nixpkgs, flake-utils, esp-dev }: 
    flake-utils.lib.eachDefaultSystem (system:
     let
-      mkShell = pkgs.mkShell;
+      inherit (pkgs) mkShell;
       pkgs = import nixpkgs {
         inherit system;
         overlays = [esp-dev.overlays.default];
@@ -32,14 +32,31 @@
     in
     {
       devShells.default = mkShell  {
-        #nativeBuildInputs = [ esp8266 cc-xtensa-lx106-elf-bi arduino-core ];
-        buildInputs = [ 
+        nativeBuildInputs = [ 
+          esp8266-rtos-sdk
+          gcc-xtensa-lx106-elf-bin
+          arduino-core
+        ];
+        buildInputs = with pkgs; [
+          clang
+          clang-tools
           arduino-core 
           gcc-xtensa-lx106-elf-bin
           esp8266-rtos-sdk
         ];
 
         shellHook = ''
+          export RTOS_SDK=${esp8266-rtos-sdk}
+          export ESP8266_TOOLING=$(dirname $(dirname $(which xtensa-lx106-elf-ar)))
+          mkdir -p components
+          rm -rf components/*
+          ln -fs ${arduino-core} components/arduino
+          ln -fs build/compile_commands.json compile_commands.json
+          cat << EOF > .clangd
+          CompileFlags:
+            Add: [-isysroot=/nix/store/8g6vkm0r5c29w4xj0lkr6j5xkyzchdpi-esp8266-toolchain-2020r3 ]
+            Remove: [-fno-tree-switch-conversion, -mtext-section-literals, -mlongcalls, -fstrict-volatile-bitfields]
+          EOF
         '';
       };
     }
