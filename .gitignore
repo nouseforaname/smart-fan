@@ -1,0 +1,10 @@
+./build
+./main/build
+.cache
+.direnv
+secrets.h
+.envrc
+.clangd
+compile_commands.json
+sdkconfig
+components
