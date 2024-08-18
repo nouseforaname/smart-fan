@@ -39,10 +39,12 @@
         ];
         buildInputs = with pkgs; [
           clang
+          jq
           clang-tools
           arduino-core 
           gcc-xtensa-lx106-elf-bin
           esp8266-rtos-sdk
+          cmake-language-server
         ];
 
         shellHook = ''
